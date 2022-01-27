@@ -1,55 +1,68 @@
 var hypnoticBall, database;
 var position;
 
-
 function setup(){
-  database = firebase.database();
-  console.log(database);
-  createCanvas(500,500);
+    database = firebase.database(); //Se guarda la base de datos en le programa
+    console.log(database),
 
-  hypnoticBall = createSprite(250,250,10,10);
-  hypnoticBall.shapeColor = "red";
+    createCanvas(500,500);
+    hypnoticBall = createSprite(250,250,10,10);
+    hypnoticBall.shapeColor = "red";
 
+    //.ref() se utiliza para hacer referencia a la ubicación del valor de la base de datos que nos interesa.
+    var hypnoticBallPosition = database.ref('ball/position');
 
-  var hypnoticBallPosition = database.ref('ball/position');
-  hypnoticBallPosition.on("value", readPosition, showError);
+    //.on() crea un oyente, que sigue escuchando los cambios en la base de datos.
+    hypnoticBallPosition.on("value",readPosition,showError);
 }
-
+    
+    
 function draw(){
-  background("white");
+    background("white");
     if(position !== undefined){
         if(keyDown(LEFT_ARROW)){
             writePosition(-1,0);
-          }
-          else if(keyDown(RIGHT_ARROW)){
+        }
+        else if(keyDown(RIGHT_ARROW)){
             writePosition(1,0);
-          }
-          else if(keyDown(UP_ARROW)){
+        }
+        else if(keyDown(UP_ARROW)){
             writePosition(0,-1);
-          }
-          else if(keyDown(DOWN_ARROW)){
+        }
+        else if(keyDown(DOWN_ARROW)){
             writePosition(0,+1);
-          }
+        }
     }
     
+
     drawSprites();
-  
 }
 
+//Escribe la nueva posición en la base de datos para que se actualice
 function writePosition(x,y){
+  //.ref() indica donde guardaremos la posición
+  //.set() actualizara el valor de x e y
   database.ref('ball/position').set({
-    'x': position.x + x ,
-    'y': position.y + y
+    'x':position.x + x,
+    'y':position.y + y   
   })
 }
 
-function readPosition(data){
-  position = data.val();
-  console.log(position.x);
-  hypnoticBall.x = position.x;
-  hypnoticBall.y = position.y;
+function changePosition(x,y){
+    hypnoticBall.x = hypnoticBall.x + x;
+    hypnoticBall.y = hypnoticBall.y + y;
 }
 
+//Sí existe un cambio en la base de datos se llama a la función readPosition
+function readPosition(data){
+    position = data.val();
+    console.log(position.x);
+    console.log(position.y);
+    hypnoticBall.x = position.x;
+    hypnoticBall.y = position.y;
+}
+
+//Sí llegara a haber un error con la base de datos se llamara a esta función 
 function showError(){
-  console.log("Error in writing to the database");
+    console.log("Datos NO recibidos de base de datos");
 }
